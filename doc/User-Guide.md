@@ -73,6 +73,10 @@ Matlab's normal output is not very useful here. All the user-defined objects are
 
 ##  Installation
 
+To install Dispstr, just download the repo or distribution, and get its `Mcode` directory on your Matlab path. My preferred way of doing this is downloading the whole thing, including a copy of it in your own project's source tree, and having your project's initialization code add the Dispstr `Mcode` directory to the path.
+
+No initialization beyond path setup is necessary to use the Dispstr library; it's just a collection of class and function definitions.
+
 ##  Using dispstr and disptrs
 
 Out of the box, `dispstr()` and `dispstrs()` can be useful, because they work on Matlab-supplied datatypes and produce output that is inconvenient to produce using base Matlab functions.
