@@ -50,6 +50,8 @@ elseif iscell(x)
 elseif ischar(x)
 	% An unfortunate consequence of the typical use of char and dispstrs' contract
 	out = num2cell(x);
+elseif isa(x, 'tabular')
+    out = dispstrsTabular(x);
 elseif isa(x, 'datetime')
     out = dispstrsDatetime(x);
 elseif isa(x, 'struct')
@@ -72,6 +74,19 @@ end
 
 function out = dispstrsNumeric(x)
 out = reshape(strtrim(cellstr(num2str(x(:)))), size(x));
+end
+
+function out = dispstrsTabular(x)
+out = cell(size(x));
+for iRow = 1:size(x, 1)
+    for iCol = 1:size(x, 2)
+        val = x{iRow,iCol};
+        if iscell(val)
+            val = val{1};
+        end
+        out{iRow,iCol} = dispstr(val);
+    end
+end
 end
 
 function out = dispstrsGenericDisp(x)
