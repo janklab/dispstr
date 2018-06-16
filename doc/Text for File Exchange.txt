@@ -15,3 +15,5 @@ When using this library, your user-defined objects can now be displayed inside s
 I think the major value in this library is in establishing the function convention and signatures, not in the implementation code itself.
 
 To use Dispstr, get it on your Matlab path, and then define dispstr() and dispstrs() methods on your classes that you want to have custom displays for. (Or have them inherit from @dispstrable and just define dispstrs().)
+
+This project's home is on GitHub at https://github.com/apjanke/dispstr.
