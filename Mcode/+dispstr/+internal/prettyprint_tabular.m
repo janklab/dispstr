@@ -6,7 +6,7 @@ function out = prettyprint_tabular(t)
 varNames = t.Properties.VariableNames;
 nVars = numel(varNames);
 if nVars == 0
-    out = sprintf('%s table with zero variables', size2str(size(t)));
+    out = sprintf('%s table with zero variables', dispstr.internal.size2str(size(t)));
     return;
 end
 varVals = cell(1, nVars);
