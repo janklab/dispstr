@@ -4,9 +4,34 @@ The Dispstr API is a Matlab API for extensible, polymorphic custom object displa
 
 ## Motivation
 
-Matlab lacks a conventional method for polymorphic data display that works across (almost) all types, like Java's `toString()` does. This makes it hard to write generic code that can take arbitrary inputs and include a string representation of them in debugging data. It also means that
+Matlab lacks a conventional method for polymorphic data display that works across (almost) all types, like Java's `toString()` does. This makes it hard to write generic code that can take arbitrary inputs and include a string representation of them in debugging data. It also means that custom classes don't display well when they're inside a `struct` or `table`.
 
 Dispstr provides an API that includes a conventional set of functions/methods for doing polymorphic display, and a display method that respects them and supports Matlab's own composite types like `struct`, `table`, and `cell`.
+
+This fixes Matlab output that looks like this:
+
+```
+>> disp(tbl)
+    Name         UserID          Birthday   
+    _______    ____________    ______________
+    'Alice'    [1x1 UserID]    [1x1 Birthday]
+    'Bob'      [1x1 UserID]    [1x1 Birthday]
+    'Carol'    [1x1 UserID]    [1x1 Birthday]
+```
+
+to look more useful, like this:
+
+```
+>> prettyprint(tbl)
+    Name    UserID        Birthday
+    _____   ___________   ________
+    Alice   HR\alice      May 24  
+    Bob     Sales\bob     Dec 14  
+    Carol   Sales\carol   Apr 20  
+```
+
+
+There's not a whole lot of code in this library. I think the major value in it is in establishing the function convention and signatures, not in the implementation code itself.
 
 ## Functions
 
@@ -26,9 +51,15 @@ Classes can implement their own `prettyprint` methods to customize their own dis
 
 `pp` is a command wrapper around `prettyprint` for interactive use. It does the same thing as `prettyprint`, except that it also accepts variable names as `char` for its input.
 
+###  `@dispstrable`
+
+`@dispstrable` is a convenience mixin class that makes it easier for you to write classes that use dispstr and dispstrs.
+
 ## Usage
 
-Get the Dispstr library
+Get the Dispstr library on your path, and then define `dispstr()` and `dispstrs()` methods on your classes. Have their `disp()` methods use `dispstr()`. Or, for convenience, have them inherit from `@dispstrable` and just define `dispstrs()` on them.
+
+See [the Documentation](doc\Index.md) for details.
 
 ## License
 
