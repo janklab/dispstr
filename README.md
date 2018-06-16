@@ -59,7 +59,7 @@ Classes can implement their own `prettyprint` methods to customize their own dis
 
 Get the Dispstr library on your path, and then define `dispstr()` and `dispstrs()` methods on your classes. Have their `disp()` methods use `dispstr()`. Or, for convenience, have them inherit from `@dispstrable` and just define `dispstrs()` on them.
 
-See [the Documentation](doc\Index.md) for details.
+See [the Documentation](doc/Index.md) for details.
 
 ## License
 
