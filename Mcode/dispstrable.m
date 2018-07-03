@@ -20,6 +20,7 @@ methods
     end
     
     function out = dispstr(this)
+        %DISPSTR Display string for array
         if isscalar(this)
             strs = dispstrs(this);
             out = strs{1};
