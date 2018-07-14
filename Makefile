@@ -1,14 +1,18 @@
-VERSION=$(shell cat VERSION)
+# This Makefile is just for building the release distribution.
+# It's not needed for just building or running the program.
 
-FILES=LICENSE Mcode Mcode-examples README.md doc
+
+PROGRAM=SLF4M
+VERSION=$(shell cat VERSION)
+FILES=Mcode Mcode-examples LICENSE README.md doc
 
 .PHONY: dist
 dist:
-	mkdir -p dist/dispstr-$(VERSION)
-	cp -r $(FILES) dist/dispstr-$(VERSION)
-	rm -f dist/dispstr-$(VERSION)/*.DS_Store
-	cd dist && tar czf dispstr-$(VERSION).tgz dispstr-$(VERSION)
-	cd dist && zip -r -q dispstr-$(VERSION).zip dispstr-$(VERSION)
+	mkdir -p dist/${PROGRAM}-${VERSION}
+	cp -r $(FILES) dist/${PROGRAM}-${VERSION}
+	rm -f dist/${PROGRAM}-${VERSION}/*.DS_Store
+	cd dist; tar czf ${PROGRAM}-${VERSION}.tgz --exclude='*.DS_Store' ${PROGRAM}-${VERSION}
+	cd dist; zip -rq ${PROGRAM}-${VERSION}.zip ${PROGRAM}-${VERSION} -x '*.DS_Store'
 
 .PHONY: clean
 clean:
