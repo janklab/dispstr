@@ -16,7 +16,7 @@ if isscalar(s)
     end
     out = strjoin(lines, newline);
 else
-    out = dispstr.internal.dispc(s);
+    out = dispstrlib.internal.dispc(s);
 end
     
 end

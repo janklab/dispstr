@@ -24,7 +24,7 @@ function out = mycombvec(vecs)
     otherwise
       a = vecs{1}(:);
       rest = vecs(2:end);
-      rest_combs = dispstr.internal.mycombvec(rest);
+      rest_combs = dispstrlib.internal.mycombvec(rest);
       n_combs = numel(a) * size(rest_combs, 1);
       out = repmat(a(1), [n_combs 1+size(rest_combs, 2)]);
       for i = 1:numel(a)

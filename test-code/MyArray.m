@@ -21,7 +21,7 @@ classdef MyArray < dispstrable
         end
         
         function prettyprint(this)
-        dispstr.internal.prettyprint_array(dispstrs(this));
+        dispstrlib.internal.prettyprint_array(dispstrs(this));
         end
     end
 end

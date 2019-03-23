@@ -28,13 +28,13 @@ function out = prettyprint(x)
 %
 
 if isstruct(x)
-    out = dispstr.internal.prettyprint_struct(x);
+    out = dispstrlib.internal.prettyprint_struct(x);
 elseif iscell(x)
-    out = dispstr.internal.prettyprint_cell(x);
+    out = dispstrlib.internal.prettyprint_cell(x);
 elseif isa(x, 'tabular')
-    out = dispstr.internal.prettyprint_tabular(x);
+    out = dispstrlib.internal.prettyprint_tabular(x);
 else
-    out = dispstr.internal.dispc(x);
+    out = dispstrlib.internal.dispc(x);
 end
 
 if nargout == 0

@@ -14,12 +14,12 @@ else
     for i = 1:numel(high_sz)
         high_ixs{i} = [1:high_sz(i)]';
     end
-    page_ixs = dispstr.internal.mycombvec(high_ixs);
+    page_ixs = dispstrlib.internal.mycombvec(high_ixs);
     chunks = {};
     for i_page = 1:size(page_ixs, 1)
         page_ix = page_ixs(i_page,:);
         chunks{end+1} = sprintf('(:,:,%s) = ', ...
-            strjoin(dispstr.internal.num2cellstr(page_ix), ':')); %#ok<*AGROW>
+            strjoin(dispstrlib.internal.num2cellstr(page_ix), ':')); %#ok<*AGROW>
         page_ix_cell = num2cell(page_ix);
         page_strs = strs(:,:,page_ix_cell{:});
         chunks{end+1} = prettyprint_matrix(page_strs);
@@ -38,7 +38,7 @@ if ~ismatrix(strs)
 end
 lens = cellfun('prodofsize', strs);
 widths = max(lens);
-formats = dispstr.internal.sprintfv('%%%ds', widths);
+formats = dispstrlib.internal.sprintfv('%%%ds', widths);
 format = strjoin(formats, '   ');
 lines = cell(size(strs,1), 1);
 for i = 1:size(strs, 1)
