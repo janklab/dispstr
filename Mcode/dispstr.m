@@ -73,6 +73,16 @@ elseif isstring(x)
         strs = cellstr(x);
     end
     out = formatArrayOfStrings(strs, {'[',']'});
+elseif isa(x, 'datetime') && isscalar(x)
+    if isnat(x)
+        out = 'NaT';
+    else
+        out = char(x);
+    end
+elseif isscalar(x) && (isa(x, 'duration') || isa(x, 'calendarDuration'))
+    out = char(x);
+elseif isscalar(x) && iscategorical(x)
+    out = char(x);
 else
     out = sprintf('%s %s', size2str(size(x)), class(x));
 end
