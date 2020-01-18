@@ -9,7 +9,8 @@ function fprintfds(varargin)
 % 
 % Examples:
 %
-% fprintfds('The value is: %s', myUserDefinedObject)
+% bday = Birthday(3, 14);
+% fprintfds('The value is: %s', bday)
 %
 % See also:
 % SPRINTFDS

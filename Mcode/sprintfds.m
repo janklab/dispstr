@@ -11,7 +11,8 @@ function out = sprintfds(fmt, varargin)
 %
 % Examples:
 %
-% str = sprintfds('The value is: %s', myUserDefinedObject)
+% bday = Birthday(3, 14);
+% str = sprintfds('The value is: %s', bday)
 %
 % See also:
 % FPRINTFDS
