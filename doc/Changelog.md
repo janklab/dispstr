@@ -1,8 +1,10 @@
 Changelog for Dispstr
 ======================
 
-Version ??? (???)
+Version 1.2 (???)
 --------------------------
+
+* Add dispstrlib.disp()
 
 Version 1.1.1 (2020-01-30)
 --------------------------
