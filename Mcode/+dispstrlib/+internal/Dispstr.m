@@ -64,7 +64,7 @@ classdef Dispstr
       
       dstrs = repmat(string(missing), size(c));
       for i = 1:numel(c)
-        dstrs{i} = dispstr(c{i});
+        dstrs(i) = dispstr(c{i});
       end
       dstrs = strcat("{", dstrs, "}");
       

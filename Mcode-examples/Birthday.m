@@ -1,8 +1,8 @@
 classdef Birthday < dispstrlib.Displayable
     
     properties
-        Month
-        Day
+        Month double
+        Day double
     end
     
     methods

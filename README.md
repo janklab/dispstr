@@ -6,6 +6,114 @@ The Dispstr API is a Matlab API for extensible, polymorphic custom object displa
 
 ## Motivation
 
+Let's say you've got a class with a custom `disp` method.
+
+```matlab
+classdef Birthday1
+    
+    properties
+        Month double
+        Day double
+    end
+    
+    methods
+        function this = Birthday1(month, day)
+            this.Month = month;
+            this.Day = day;
+        end
+
+        function disp(this)
+          fprintf('%s\n', datestr(datenum(1, this.Month, this.Day), 'mmm dd'));
+        end
+    end
+    
+end
+```
+
+This works great for displaying at the command window.
+
+```
+>> b = Birthday1(10, 14)
+b = 
+Oct 14
+```
+
+But what if you stick it inside a struct or a cell?
+
+```
+>> c = { 42 b }
+c =
+  1×2 cell array
+    {[42]}    {1×1 Birthday1}
+>> s.bday = b
+s = 
+  struct with fields:
+
+    bday: [1×1 Birthday1]
+```
+
+Or if you want to use it with fprintf or sprintf?
+
+```
+>> fprintf('My bday is %s\n', b)
+My bday is Error using fprintf
+Unable to convert 'Birthday1' value to 'char' or 'string'. 
+```
+
+Darn it.
+
+Dispstr supplies an API that lets you overcome this. Have your class inherit from `dispstrlib.Displayable`, and override the `dispstr_scalar` method.
+
+```matlab
+classdef Birthday < dispstrlib.Displayable
+    
+    properties
+        Month double
+        Day double
+    end
+    
+    methods
+        function this = Birthday(month, day)
+            this.Month = month;
+            this.Day = day;
+        end
+    end
+    
+    methods (Access = protected)
+        function out = dispstr_scalar(this)
+            out = datestr(datenum(1, this.Month, this.Day), 'mmm dd');
+        end
+    end
+    
+end
+```
+
+Now it works! (As long as you call `dispd` to display cells, structs, or tables.)
+
+```
+>> b = Birthday(10, 14)
+b = 
+Oct 14
+>> dispd({ 42 b })
+{42}   {Oct 14}
+>> s.bday = b;
+>> dispd(s)
+    bday: 'Oct 14'
+>> fprintf('My bday is %s\n', b)
+My bday is Oct 14
+```
+
+And if you're brave, pull in the `Mcode-monkeypatch/` dir to your Matlab path, and it'll override Matlab's `disp` to do this automatically.
+
+```
+>> addpath Mcode-monkeypatch
+>> { 42 b }
+c =
+{42}   {Oct 14}
+```
+
+## A techier explanation
+
 Matlab lacks a conventional method for polymorphic data display that works across (almost) all types, like Java's `toString()` does. This makes it hard to write generic code that can take arbitrary inputs and include a string representation of them in debugging data. It also means that custom classes don't display well when they're inside a `struct` or `table`.
 
 Dispstr provides an API that includes a conventional set of functions/methods for doing polymorphic display, and a display method that respects them and supports Matlab's own composite types like `struct`, `table`, and `cell`.
@@ -24,7 +132,7 @@ This fixes Matlab output that looks like this:
 to look more useful, like this:
 
 ```
->> prettyprint(tbl)
+>> dispd(tbl)
     Name    UserID        Birthday
     _____   ___________   ________
     Alice   HR\alice      May 24  
@@ -68,7 +176,7 @@ Get the Dispstr library on your path, and then define `dispstr()` and `dispstrs(
 
 Use `dispd` to display tables. Use `fprintfd` and `sprintfd` instead of `fprintf` and `sprintf` for string output.
 
-If you're brave, and your code is an application instead of a library, or you're using Matlab interactively, add `Mcode-monkeypatch` to your path too, to override Matlab's own `disp`, `fprintf`, and `sprintf` to support dispstr. (It's a risky move, but having that work is really nice, so consider doing it.)
+If you're brave, and your code is an application instead of a library, or you're using Matlab interactively, add `Mcode-monkeypatch` to your path too, to override Matlab's own `disp`, `fprintf`, and `sprintf` to support dispstr. (It's a risky move, but having that work is really nice, so consider doing it. And go ahead and turn off `warning off MATLAB:dispatcher:nameConflict`.)
 
 See the documentation [on the web](http://dispstr.janklab.net) or in `docs/` in the distribution for details.
 
