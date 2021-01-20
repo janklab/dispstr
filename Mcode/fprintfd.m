@@ -1,10 +1,10 @@
-function out = fprintfds(varargin)
-%FPRINTFDS A fprintf that respects dispstr()
+function out = fprintfd(varargin)
+%FPRINTFDS A fprintf that respects dispstr
 %
-% out = fprintfds(fmt, varargin)
-% out = fprintfds(fid, fmt, varargin)
+% out = fprintfd(fmt, varargin)
+% out = fprintfd(fid, fmt, varargin)
 %
-% This is a variant of fprintf that respects the dispstr() function.
+% This is a variant of fprintf that respects the dispstr functions.
 % See the documentation for SPRINTFDS for details on how it works.
 % 
 % Examples:

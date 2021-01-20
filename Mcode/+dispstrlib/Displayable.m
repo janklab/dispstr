@@ -94,7 +94,10 @@ classdef Displayable
     
     function out = fprintf(varargin)
       args = convertDisplayablesToString(varargin);
-      out = sprintf(args{:});
+      out = fprintf(args{:});
+      if nargout == 0
+        clear out
+      end
     end
     
   end

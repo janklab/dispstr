@@ -1,8 +1,8 @@
-function errords(varargin)
-% errords A variant of error() that supports dispstr functionality
+function errord(varargin)
+% A variant of error() that supports dispstr functionality
 %
-% errords(fmt, varargin)
-% errords(errorId, fmt, varargin)
+% errord(fmt, varargin)
+% errord(errorId, fmt, varargin)
 %
 % This is just like Matlab's error(), except you can pass objects
 % directly to '%s' conversion specifiers, and they will be automatically

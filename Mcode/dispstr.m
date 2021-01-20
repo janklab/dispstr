@@ -27,7 +27,7 @@ function out = dispstr(x, options)
 %   dispstr(magic(3))
 %
 % See also:
-% DISPSTRS, SPRINTFDS
+% DISPSTRS, SPRINTFD
 
 if nargin < 2;  options = [];  end
 options = parseOpts(options, {'QuoteStrings',false});

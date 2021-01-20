@@ -26,24 +26,49 @@ classdef Dispstr
       end
     end
     
-    function dispCell(x)
-      
-      if ~iscell(x)
-        error('input must be a cell; got a %s', class(x));
+    function disp(x)
+      if iscell(x)
+        dispstrlib.internal.Dispstr.dispCell(x);
+      elseif isnumeric(x)
+        builtin('disp', x);
+      elseif isstruct(x)
+        dispstrlib.internal.Dispstr.dispStruct(x);
+      elseif istable(x)
+        dispstrlib.internal.Dispstr.dispTable(x);
+      else
+        builtin('disp', x);
       end
+    end
+    
+    function display(x) %#ok<DISPLAY>
+      label = inputname(1);
+      if ~isempty(label)
+        fprintf('%s =\n', label);
+      end
+      dispstrlib.internal.Dispstr.disp(x);
+    end
+    
+    function dispCell(c)
       
-      for i = 1:numel(x)
-        if isobject(x{i})
-          if isa(x{i}, 'datetime') || isa(x{i}, 'duration') || isa(x{i}, 'calendarduration')
-            % NOP
-          else
-            x{i} = dispstr(x{i});
-          end
+      if ~iscell(c)
+        error('input must be a cell; got a %s', class(c));
+      end
+      if isempty(c)
+        if isequal(size(c), [0 0])
+          fprintf('{}\n');
+        else
+          fprintf('Empty %s %s\n', size2str(c), 'cell array');
         end
+        return
       end
       
-      disp(x);
+      dstrs = repmat(string(missing), size(c));
+      for i = 1:numel(c)
+        dstrs{i} = dispstr(c{i});
+      end
+      dstrs = strcat("{", dstrs, "}");
       
+      fprintf('%s\n', dispstrlib.internal.Dispstr.prettyprintArray(dstrs));
     end
     
     function dispStruct(x)
@@ -59,7 +84,7 @@ classdef Dispstr
       for i = 1:numel(flds)
         val = s.(flds{i});
         if isobject(val)
-          if isa(val, 'datetime') || isa(val, 'duration') || isa(val, 'calendarduration')
+          if alreadySupportsPrintf(val)
             % NOP
           else
             s.(flds{i}) = dispstr(val);
@@ -67,7 +92,7 @@ classdef Dispstr
         end
       end
       
-      disp(s);
+      builtin('disp', s);
       
     end
     
@@ -130,7 +155,7 @@ classdef Dispstr
       %
       % out = prettyprintArray(strs)
       %
-      % strs (cellstr) is an array of display strings of any size.
+      % strs (string) is an array of display strings of any size.
       
       if ismatrix(strs)
         out = dispstrlib.internal.Dispstr.prettyprintMatrix(strs);
@@ -160,6 +185,12 @@ classdef Dispstr
     end
     
     function out = prettyprintMatrix(strs)
+      % Pretty-print a matrix of arbitrary display strings
+      %
+      % out = prettyprintMatrix(strs)
+      %
+      % strs is a matrix of strings which are already converted to their display
+      % form.
       if ~ismatrix(strs)
         error('Input must be matrix; got %d-D', ndims(strs));
       end
@@ -172,6 +203,10 @@ classdef Dispstr
         lines{i} = sprintf(format, strs{i,:});
       end
       out = strjoin(lines, '\n');
+      if nargout == 0
+        fprintf('%s\n', out);
+        clear out;
+      end
     end
     
     function out = prettyprintCell(c)
@@ -367,4 +402,12 @@ function out = rowData2sprintfArgs(widths, strs)
 x = [num2cell(widths(:)) strs(:)];
 x = x';
 out = x(:);
+end
+
+function out = alreadySupportsPrintf(obj)
+persistent supportingClasses
+if isempty(supportingClasses)
+  supportingClasses = ["datetime" "duration" "calendarduration"];
+end
+out = ismember(class(obj), supportingClasses);
 end
