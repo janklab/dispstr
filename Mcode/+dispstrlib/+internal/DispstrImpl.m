@@ -146,7 +146,7 @@ classdef DispstrImpl
         for i_page = 1:size(page_ixs, 1)
           page_ix = page_ixs(i_page,:);
           chunks{end+1} = sprintf('(:,:,%s) = ', ...
-            strjoin(dispstrlib.internal.DispstrImpl.num2cellstr(page_ix), ':')); %#ok<*AGROW>
+            strjoin(dispstrlib.internal.DispstrImpl.num2cellstr(page_ix), ',')); %#ok<*AGROW>
           page_ix_cell = num2cell(page_ix);
           page_strs = strs(:,:,page_ix_cell{:});
           chunks{end+1} = dispstrlib.internal.DispstrImpl.prettyprintMatrix(page_strs);

@@ -7,6 +7,7 @@ Version 1.2 (???)
 * Add dispstrlib.disp()
 * Refactor to a single-class core implementation, to facilitate making compatters
 * Fix col-width issue in matrix display
+* Fix array display for ndims > 3
 
 Version 1.1.1 (2020-01-30)
 --------------------------
