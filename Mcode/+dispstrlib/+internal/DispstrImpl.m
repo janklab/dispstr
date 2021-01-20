@@ -26,7 +26,7 @@ classdef DispstrImpl
       end
     end
     
-    function disp_cell(x)
+    function dispCell(x)
       
       if ~iscell(x)
         error('input must be a cell; got a %s', class(x));
@@ -46,7 +46,7 @@ classdef DispstrImpl
       
     end
     
-    function disp_struct(x)
+    function dispStruct(x)
       
       s = x;
       
@@ -125,15 +125,15 @@ classdef DispstrImpl
       out = strtrim(cellstr(num2str(x(:))));
     end
     
-    function out = prettyprint_array(strs)
+    function out = prettyprintArray(strs)
       %PRETTYPRINT_ARRAY Pretty-print an array from dispstrs
       %
-      % out = prettyprint_array(strs)
+      % out = prettyprintArray(strs)
       %
       % strs (cellstr) is an array of display strings of any size.
       
       if ismatrix(strs)
-        out = dispstrlib.internal.DispstrImpl.prettyprint_matrix(strs);
+        out = dispstrlib.internal.DispstrImpl.prettyprintMatrix(strs);
       else
         sz = size(strs);
         high_sz = sz(3:end);
@@ -149,7 +149,7 @@ classdef DispstrImpl
             strjoin(dispstrlib.internal.DispstrImpl.num2cellstr(page_ix), ':')); %#ok<*AGROW>
           page_ix_cell = num2cell(page_ix);
           page_strs = strs(:,:,page_ix_cell{:});
-          chunks{end+1} = dispstrlib.internal.DispstrImpl.prettyprint_matrix(page_strs);
+          chunks{end+1} = dispstrlib.internal.DispstrImpl.prettyprintMatrix(page_strs);
         end
         out = strjoin(chunks, '\n');
       end
@@ -159,7 +159,7 @@ classdef DispstrImpl
       end
     end
     
-    function out = prettyprint_matrix(strs)
+    function out = prettyprintMatrix(strs)
       if ~ismatrix(strs)
         error('Input must be matrix; got %d-D', ndims(strs));
       end
@@ -174,7 +174,7 @@ classdef DispstrImpl
       out = strjoin(lines, '\n');
     end
     
-    function out = prettyprint_cell(c)
+    function out = prettyprintCell(c)
       %PRETTYPRINT_CELL Cell implementation of prettyprint
       
       %TODO: Maybe justify each cell independently based on its content type
@@ -197,7 +197,7 @@ classdef DispstrImpl
       
     end
     
-    function out = prettyprint_struct(s)
+    function out = prettyprintStruct(s)
       %PRETTYPRINT_STRUCT struct implementation of prettyprint
       
       if isscalar(s)
@@ -220,7 +220,7 @@ classdef DispstrImpl
       
     end
     
-    function out = prettyprint_tabular(t)
+    function out = prettyprintTabular(t)
       %PRETTYPRINT_TABULAR Tabular implementation of prettyprint
       
       %TODO: Probably put quotes around strings
@@ -237,11 +237,11 @@ classdef DispstrImpl
         varVals{i} = t{:,i};
       end
       
-      out = prettyprint_tabular_generic(varNames, varVals);
+      out = prettyprintTabular_generic(varNames, varVals);
       
     end
     
-    function out = prettyprint_tabular_generic(varNames, varVals)
+    function out = prettyprintTabular_generic(varNames, varVals)
       % A generic tabular pretty-print that can be used for tabulars or relations
       
       nVars = numel(varNames);

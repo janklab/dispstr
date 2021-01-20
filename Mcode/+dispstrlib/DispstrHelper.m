@@ -4,7 +4,7 @@ classdef DispstrHelper
     
     function txt = disparray(x)
       strs = dispstrs(x);
-      txt = dispstrlib.internal.DispstrImpl.prettyprint_array(strs);
+      txt = dispstrlib.internal.DispstrImpl.prettyprintArray(strs);
       if nargout == 0
         disp(txt)
         clear txt
