@@ -6,6 +6,10 @@ PROGRAM=dispstr
 VERSION=$(shell cat VERSION)
 FILES=Mcode Mcode-examples LICENSE README.md doc VERSION
 
+.PHONY: docs
+docs:
+	cat README.md docs/index-extra.md > docs/index.md
+
 .PHONY: dist
 dist:
 	mkdir -p dist/${PROGRAM}-${VERSION}

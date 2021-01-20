@@ -60,7 +60,7 @@ My bday is Error using fprintf
 Unable to convert 'Birthday1' value to 'char' or 'string'. 
 ```
 
-Darn it.
+Bummer!
 
 Dispstr supplies an API that lets you overcome this. Have your class inherit from `dispstrlib.Displayable`, and override the `dispstr_scalar` method.
 
