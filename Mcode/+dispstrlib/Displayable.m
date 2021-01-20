@@ -115,7 +115,7 @@ classdef Displayable
         if isequal(size(this), [0 0])
           fprintf('[] (%s)\n', class(this));
         else
-          fprintf('Empty %s %s array\n', dispstrlib.internal.DispstrImpl.size2str(size(this)), ...
+          fprintf('Empty %s %s array\n', dispstrlib.internal.Dispstr.size2str(size(this)), ...
             class(this));
         end
       else

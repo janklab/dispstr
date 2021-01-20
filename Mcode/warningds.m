@@ -8,7 +8,7 @@ function warningds(varargin)
 % directly to '%s' conversion specifiers, and they will be automatically
 % converted using dispstr.
 
-args = dispstrlib.internal.DispstrImpl.convertArgsForPrintf(varargin);
+args = dispstrlib.internal.Dispstr.convertArgsForPrintf(varargin);
 warning(args{:});
 
 end

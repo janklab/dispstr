@@ -5,9 +5,9 @@ function disp(x)
 % overrides on objects inside composite data types like cells and structs.
 
 if isstruct(x)
-  dispstrlib.internal.DispstrImpl.dispStruct(x);
+  dispstrlib.internal.Dispstr.dispStruct(x);
 elseif iscell(x)
-  dispstrlib.internal.DispstrImpl.dispCell(x);
+  dispstrlib.internal.Dispstr.dispCell(x);
 elseif istable(x)
   % Not implemented yet
   disp(x);

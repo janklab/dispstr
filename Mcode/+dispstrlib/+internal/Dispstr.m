@@ -1,4 +1,4 @@
-classdef DispstrImpl
+classdef Dispstr
   % All the dispstr implementation code, wrapped up in a class
   %
   % We make it a class so that all the definitions can live in a single
@@ -109,7 +109,7 @@ classdef DispstrImpl
         otherwise
           a = vecs{1}(:);
           rest = vecs(2:end);
-          rest_combs = dispstrlib.internal.DispstrImpl.mycombvec(rest);
+          rest_combs = dispstrlib.internal.Dispstr.mycombvec(rest);
           n_combs = numel(a) * size(rest_combs, 1);
           out = repmat(a(1), [n_combs 1+size(rest_combs, 2)]);
           for i = 1:numel(a)
@@ -133,7 +133,7 @@ classdef DispstrImpl
       % strs (cellstr) is an array of display strings of any size.
       
       if ismatrix(strs)
-        out = dispstrlib.internal.DispstrImpl.prettyprintMatrix(strs);
+        out = dispstrlib.internal.Dispstr.prettyprintMatrix(strs);
       else
         sz = size(strs);
         high_sz = sz(3:end);
@@ -141,15 +141,15 @@ classdef DispstrImpl
         for i = 1:numel(high_sz)
           high_ixs{i} = (1:high_sz(i))';
         end
-        page_ixs = dispstrlib.internal.DispstrImpl.mycombvec(high_ixs);
+        page_ixs = dispstrlib.internal.Dispstr.mycombvec(high_ixs);
         chunks = {};
         for i_page = 1:size(page_ixs, 1)
           page_ix = page_ixs(i_page,:);
           chunks{end+1} = sprintf('(:,:,%s) = ', ...
-            strjoin(dispstrlib.internal.DispstrImpl.num2cellstr(page_ix), ',')); %#ok<*AGROW>
+            strjoin(dispstrlib.internal.Dispstr.num2cellstr(page_ix), ',')); %#ok<*AGROW>
           page_ix_cell = num2cell(page_ix);
           page_strs = strs(:,:,page_ix_cell{:});
-          chunks{end+1} = dispstrlib.internal.DispstrImpl.prettyprintMatrix(page_strs);
+          chunks{end+1} = dispstrlib.internal.Dispstr.prettyprintMatrix(page_strs);
         end
         out = strjoin(chunks, '\n');
       end
@@ -165,7 +165,7 @@ classdef DispstrImpl
       end
       lens = cellfun('prodofsize', strs);
       widths = max(lens, 1);
-      formats = dispstrlib.internal.DispstrImpl.sprintfv('%%%ds', widths);
+      formats = dispstrlib.internal.Dispstr.sprintfv('%%%ds', widths);
       format = strjoin(formats, '   ');
       lines = cell(size(strs,1), 1);
       for i = 1:size(strs, 1)
@@ -215,7 +215,7 @@ classdef DispstrImpl
         end
         out = strjoin(lines, newline);
       else
-        out = dispstrlib.internal.DispstrImpl.dispc(s);
+        out = dispstrlib.internal.Dispstr.dispc(s);
       end
       
     end
@@ -228,7 +228,7 @@ classdef DispstrImpl
       varNames = t.Properties.VariableNames;
       nVars = numel(varNames);
       if nVars == 0
-        out = sprintf('%s table with zero variables', dispstrlib.internal.DispstrImpl.size2str(size(t)));
+        out = sprintf('%s table with zero variables', dispstrlib.internal.Dispstr.size2str(size(t)));
         return;
       end
       varVals = cell(1, nVars);
