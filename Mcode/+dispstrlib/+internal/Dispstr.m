@@ -34,7 +34,7 @@ classdef Dispstr
       elseif isstruct(x)
         dispstrlib.internal.Dispstr.dispStruct(x);
       elseif istable(x)
-        dispstrlib.internal.Dispstr.dispTable(x);
+        dispstrlib.internal.Dispstr.prettyprintTabular(x);
       else
         builtin('disp', x);
       end
@@ -272,12 +272,19 @@ classdef Dispstr
         varVals{i} = t{:,i};
       end
       
-      out = prettyprintTabular_generic(varNames, varVals);
-      
+      out = dispstrlib.internal.Dispstr.prettyprintTabular_generic(varNames, varVals, true);      
+      if nargout == 0
+        fprintf('%s\n', out);
+      end
     end
     
-    function out = prettyprintTabular_generic(varNames, varVals)
+    function out = prettyprintTabular_generic(varNames, varVals, quoteStrings)
       % A generic tabular pretty-print that can be used for tabulars or relations
+      arguments
+        varNames string
+        varVals cell
+        quoteStrings logical = false
+      end
       
       nVars = numel(varNames);
       nRows = numel(varVals{1});
@@ -286,6 +293,11 @@ classdef Dispstr
       varStrWidths = NaN(1, nVars);
       for i = 1:nVars
         varStrs{i} = dispstrs(varVals{i});
+        if quoteStrings
+          if isstring(varVals{i})
+            varStrs{i} = strjoin('"', varVals{i}, '"');
+          end
+        end
         varStrWidths(i) = max(cellfun('length', varStrs{i}));
       end
       varNameWidths = cellfun('length', varNames);
@@ -318,6 +330,9 @@ classdef Dispstr
       end
       
       out = strjoin(lines, newline);
+      if nargout == 0
+        fprintf('%s\n', out);
+      end
       
     end
     
@@ -399,7 +414,7 @@ end
 
 
 function out = rowData2sprintfArgs(widths, strs)
-x = [num2cell(widths(:)) strs(:)];
+x = [num2cell(widths(:)) cellstr(strs(:))];
 x = x';
 out = x(:);
 end

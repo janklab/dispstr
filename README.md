@@ -44,11 +44,11 @@ There's not a whole lot of code in this library. I think the major value in it i
 
 `dispstr` produces a string for each element in an array, that describes that particular element's value or contents.
 
-### `sprintfds`, `fprintfds`, `errords`, and `warningds`
+### `sprintfd`, `fprintfd`, `errord`, and `warningd`
 
-`sprintfds` and `fprintfds` are variants of `sprintf` and `fprintf` that respect dispstr() methods defined on their arguments, so you can pass objects to '%s' conversion specifiers and get nice output.
+`sprintfd` and `fprintfd` are variants of `sprintf` and `fprintf` that respect dispstr() methods defined on their arguments, so you can pass objects to '%s' conversion specifiers and get nice output.
 
-Similarly, `errords` and `warningds` are variants of Matlab’s `error` and `warning` that support dispstr functionality, so you can pass objects to their '%s' conversion specifiers, too.
+Similarly, `errord` and `warningd` are variants of Matlab’s `error` and `warning` that support dispstr functionality, so you can pass objects to their `%s` conversion specifiers, too.
 
 ### `prettyprint` and `pp`
 
@@ -60,13 +60,17 @@ Classes can implement their own `prettyprint` methods to customize their own dis
 
 ### `dispstrlib.Displayable`
 
-`dispstrlib.Displayable` is a convenience mixin class that makes it easier for you to write classes that use dispstr and dispstrs.
+`dispstrlib.Displayable` is a mixin class that makes it easier for you to write classes that use dispstr and dispstrs. All you have to do is inherit from it or `dispstrlib.DisplayableHandle` and override `dispstr_scalar`.
 
 ## Usage
 
 Get the Dispstr library on your path, and then define `dispstr()` and `dispstrs()` methods on your classes. Have their `disp()` methods use `dispstr()`. Or, for convenience, have them inherit from `dispstrlib.Displayable` and just define `dispstrs()` on them.
 
-See [the Documentation](doc/Index.md) for details.
+Use `dispd` to display tables. Use `fprintfd` and `sprintfd` instead of `fprintf` and `sprintf` for string output.
+
+If you're brave, and your code is an application instead of a library, or you're using Matlab interactively, add `Mcode-monkeypatch` to your path too, to override Matlab's own `disp`, `fprintf`, and `sprintf` to support dispstr. (It's a risky move, but having that work is really nice, so consider doing it.)
+
+See the documentation [on the web](http://dispstr.janklab.net) or in `docs/` in the distribution for details.
 
 ## License
 
