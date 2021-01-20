@@ -1,10 +1,16 @@
 classdef DispstrHelper
+  
+  methods (Static)
     
-    methods (Static)
-        function disparray(x)
-        strs = dispstrs(x);
-        out = dispstrlib.internal.prettyprint_array(strs);
-        disp(out);
-        end
+    function txt = disparray(x)
+      strs = dispstrs(x);
+      txt = dispstrlib.internal.DispstrImpl.prettyprint_array(strs);
+      if nargout == 0
+        disp(txt)
+        clear txt
+      end
     end
+    
+  end
+  
 end

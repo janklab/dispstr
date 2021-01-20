@@ -17,7 +17,7 @@ function out = sprintfds(fmt, varargin)
 % See also:
 % FPRINTFDS
 
-args = dispstrlib.internal.convertArgsForPrintf(varargin);
+args = dispstrlib.internal.DispstrImpl.convertArgsForPrintf(varargin);
 
 out = sprintf(fmt, args{:});
 

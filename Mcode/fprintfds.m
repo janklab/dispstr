@@ -26,7 +26,7 @@ end
 fmt = args{1};
 args(1) = [];
 
-args = dispstrlib.internal.convertArgsForPrintf(args);
+args = dispstrlib.internal.DispstrImpl.convertArgsForPrintf(args);
 
 if isempty(fid)
   out = fprintf(fmt, args{:});

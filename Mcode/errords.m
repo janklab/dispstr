@@ -8,9 +8,9 @@ function errords(varargin)
 % directly to '%s' conversion specifiers, and they will be automatically
 % converted using dispstr.
 
-args = dispstrlib.internal.convertArgsForPrintf(varargin);
+args = dispstrlib.internal.DispstrImpl.convertArgsForPrintf(varargin);
 
-if dispstrlib.internal.isErrorIdentifier(args{1})
+if dispstrlib.internal.DispstrImpl.isErrorIdentifier(args{1})
   id = args{1};
   args = args(2:end);
 else

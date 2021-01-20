@@ -44,8 +44,13 @@ classdef Displayable
       if isscalar(this)
         strs = dispstrs(this);
         out = strs{1};
+      elseif ismatrix(this)
+        strs = dispstrs(this);
+        out = dispstrlib.DispstrHelper.disparray(strs);
       else
-        out = sprintf('%s %s', dispstrlib.internal.size2str(size(this)), class(this));
+%        out = sprintf('%s %s', dispstrlib.internal.DispstrImpl.size2str(size(this)), class(this));
+        strs = dispstrs(this);
+        out = dispstrlib.DispstrHelper.disparray(strs);
       end
     end
     
@@ -96,7 +101,7 @@ classdef Displayable
         if isequal(size(this), [0 0])
           fprintf('[] (%s)\n', class(this));
         else
-          fprintf('Empty %s %s array\n', dispstrlib.internal.size2str(size(this)), ...
+          fprintf('Empty %s %s array\n', dispstrlib.internal.DispstrImpl.size2str(size(this)), ...
             class(this));
         end
       else
