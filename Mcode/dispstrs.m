@@ -41,6 +41,8 @@ if isempty(x)
 	out = reshape({}, size(x));
 elseif isnumeric(x)
 	out = dispstrsNumeric(x);
+elseif islogical(x)
+	out = dispstrsLogical(x);
 elseif iscellstr(x)
 	out = x;
 elseif isstring(x)
@@ -76,6 +78,11 @@ end
 
 function out = dispstrsNumeric(x)
 out = reshape(strtrim(cellstr(num2str(x(:)))), size(x));
+end
+
+function out = dispstrsLogical(x)
+out = repmat("false", size(x));
+out(x) = "true";
 end
 
 function out = dispstrsTabular(x)
