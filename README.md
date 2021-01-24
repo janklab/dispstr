@@ -32,7 +32,7 @@ end
 
 This works great for displaying at the command window.
 
-```
+```text
 >> b = Birthday1(10, 14)
 b = 
 Oct 14
@@ -40,7 +40,7 @@ Oct 14
 
 But what if you stick it inside a struct or a cell?
 
-```
+```text
 >> c = { 42 b }
 c =
   1×2 cell array
@@ -54,7 +54,7 @@ s =
 
 Or if you want to use it with fprintf or sprintf?
 
-```
+```text
 >> fprintf('My bday is %s\n', b)
 My bday is Error using fprintf
 Unable to convert 'Birthday1' value to 'char' or 'string'. 
@@ -90,7 +90,7 @@ end
 
 Now it works! (As long as you call `dispd` to display cells, structs, or tables.)
 
-```
+```text
 >> b = Birthday(10, 14)
 b = 
 Oct 14
@@ -105,7 +105,7 @@ My bday is Oct 14
 
 And if you're brave, pull in the `Mcode-monkeypatch/` dir to your Matlab path, and it'll override Matlab's `disp` to do this automatically.
 
-```
+```text
 >> addpath Mcode-monkeypatch
 >> { 42 b }
 c =
@@ -120,7 +120,7 @@ Dispstr provides an API that includes a conventional set of functions/methods fo
 
 This fixes Matlab output that looks like this:
 
-```
+```text
 >> disp(tbl)
     Name       UserID          Birthday
     _______    ____________    ______________
@@ -131,7 +131,7 @@ This fixes Matlab output that looks like this:
 
 to look more useful, like this:
 
-```
+```text
 >> dispd(tbl)
     Name    UserID        Birthday
     _____   ___________   ________
