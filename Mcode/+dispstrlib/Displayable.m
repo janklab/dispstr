@@ -45,7 +45,7 @@ classdef Displayable
     end
     
     function out = dispstr(this)
-      % Custom display string for this array as a whole.
+      % Custom display string for entire array
       if isscalar(this)
         out = dispstr_scalar(this);
       else
@@ -56,7 +56,7 @@ classdef Displayable
     end
     
     function out = dispstrs(this)
-      % Element-wise custom display strings
+      % Custom display strings for array elements
       %
       % Gets the custom display strings for each element of this array, as
       % opposed to a custom display string 
@@ -69,10 +69,12 @@ classdef Displayable
     end
     
     function out = reprstr(this)
+      % Debugging-oriented custom display string for entire array
       out = sprintf("<%s: %s>", dispstr(this));
     end
     
     function out = reprstrs(this)
+      % Debugging-oriented custom display strings for array elements
       out = repmat(string(missing), size(this));
       for i = 1:numel(this)
         out(i) = this.reprstr_scalar;
