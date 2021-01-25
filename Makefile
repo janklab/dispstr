@@ -1,23 +1,65 @@
-# This Makefile is just for building the release distribution.
-# It's not needed for just building or running the program.
+# This Makefile lets you build the project and its documentation, run tests,
+# package it for distribution, and so on.
+#
+# This is mostly provided just as a convenience for developers who like using 'make'.
+# All the actual build logic is in the dev-kit/*.m files, which can be run
+# directly, without using 'make'. The exception is 'make java', which must be
+# run without Matlab running, because Matlab locks the JAR files it has loaded.
+#
+# Targets provided:
+#
+#   make doc - Build the project documentation into doc/
+#   make test - Run the project Matlab unit tests
+#   make toolbox - Build the project as a Matlab Toolbox .mltbx file
+#   make dist - Build the project distribution zip files
+#   make java - Build your custom Java code in src/ and install it into lib/
+#   make doc-src - Build derived Markdown files in docs/
+#   make clean - Remove derived files
 
+.PHONY: test
+test:
+	./dev-kit/run_matlab "dispstrlib_make test"
 
-PROGRAM=dispstr
-VERSION=$(shell cat VERSION)
-FILES=Mcode Mcode-examples LICENSE README.md doc VERSION
+.PHONY: build
+build:
+	./dev-kit/run_matlab "dispstrlib_make build"
 
+# Build the programmatically-generated parts of the _source_ files for the doco
 .PHONY: docs
 docs:
-	cat README.md docs/index-extra.md > docs/index.md
+	./dev-kit/run_matlab "dispstrlib_make doc-src"
+
+# Build the actual output documents
+.PHONY: doc
+doc:
+	./dev-kit/run_matlab "dispstrlib_make doc"
+
+.PHONY: m-doc
+m-doc:
+	./dev-kit/run_matlab "dispstrlib_make m-doc"
+
+.PHONY: toolbox
+toolbox: m-doc
+	./dev-kit/run_matlab "dispstrlib_make toolbox"
 
 .PHONY: dist
 dist:
-	mkdir -p dist/${PROGRAM}-${VERSION}
-	cp -r $(FILES) dist/${PROGRAM}-${VERSION}
-	rm -f dist/${PROGRAM}-${VERSION}/*.DS_Store
-	cd dist; tar czf ${PROGRAM}-${VERSION}.tgz --exclude='*.DS_Store' ${PROGRAM}-${VERSION}
-	cd dist; zip -rq ${PROGRAM}-${VERSION}.zip ${PROGRAM}-${VERSION} -x '*.DS_Store'
+	./dev-kit/run_matlab "dispstrlib_make dist"
+
+# TODO: Port this to M-code. This is hard because the .jar cannot be copied in to place
+# in lib while Matlab is running, because it locks loaded .jar files (at least on Windows).
+.PHONY: java
+java:
+	cd src/java/dispstr-java; mvn package
+	mkdir -p lib/java/dispstr-java
+	cp src/java/dispstr-java/target/*.jar lib/java/dispstr-java
 
 .PHONY: clean
 clean:
-	rm -rf dist/*
+	./dev-kit/run_matlab "dispstrlib_make clean"
+
+# Run this _after_ initialization if you want to throw away some nonessential
+# features to make your repo layout simpler.
+.PHONY: simplify
+simplify:
+	./dev-kit/run_matlab "dispstrlib_make simplify"
