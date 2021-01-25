@@ -48,10 +48,7 @@ classdef Dispstr
       dispstrlib.internal.Dispstr.disp(x);
     end
     
-    function out = dispstr(x, options)
-      if nargin < 2;  options = [];  end
-      options = parseOpts(options, {'QuoteStrings',false});
-      
+    function out = dispstr(x)      
       if ~ismatrix(x)
         out = sprintf('%s %s', size2str(size(x)), class(x));
       elseif isempty(x)
@@ -72,11 +69,7 @@ classdef Dispstr
         end
       elseif ischar(x)
         if isrow(x)
-          if options.QuoteStrings
-            out = ['''' x ''''];
-          else
-            out = x;
-          end
+          out = ['''' x ''''];
         else
           strs = strcat({''''}, num2cell(x,2), {''''});
           out = formatArrayOfStringsAsMat2strExpr(strs);
@@ -89,11 +82,7 @@ classdef Dispstr
         end
         out = formatArrayOfStringsAsMat2strExpr(strs, {'{','}'});
       elseif isstring(x)
-        if options.QuoteStrings
-          strs = strcat('"', cellstr(x), '"');
-        else
-          strs = cellstr(x);
-        end
+        strs = cellstr(x);
         out = formatArrayOfStringsAsMat2strExpr(strs, {'[',']'});
       elseif isa(x, 'datetime') && isscalar(x)
         if isnat(x)
@@ -144,20 +133,63 @@ classdef Dispstr
     end
     
     function out = reprstr(x)
-      out = sprintf("<%s: %s: %s>", class(x), size2str(size(x)), dispstr(x));
+      if isnumeric(x)
+        out = string(mat2str2(x));
+      elseif ischar(x)
+        out = string(mat2str2(x));
+      elseif isstring(x)
+        out = string(mat2str2(x));
+      elseif islogical(x)
+        out = string(mat2str2(x));
+      elseif isstruct(x)
+        if isscalar(x)
+          out = mat2str2(x);
+        else
+          out = sprintf("<%s %s, fields %s>", size2str(size(x)), 'struct', ...
+            strjoin(fieldnames(x), ', '));
+        end
+      else
+        % If we're here, it's not an object of that overrides reprstr; do
+        % something generic.
+        out = sprintf("<%s: %s: %s>", class(x), size2str(size(x)), dispstr(x));
+      end
     end
     
     function out = reprstrs(x)
-      if ischar(x)
-        xx = string(x);
-      else
-        xx = x;
-      end
       % TODO: Real implementation
-      out = repmat(string(missing), size(xx));
-      strs = dispstrs(xx);
-      for i = 1:numel(xx)
-        out(i) = sprintf("<%s: %s>", class(xx), strs(i));
+      % TODO: Escaping of special characters inside strings
+      if ischar(x)
+        out = compose("'%s'", strrep(x, "'", "''"));
+      elseif isstring(x)
+        out = compose("""%s""", strrep(x, """", """"""));
+      elseif isnumeric(x)
+        % TODO: Be smarter about picking precision? Would be nice to just
+        % display to eps maybe?
+        out = dispstrlib.internal.Dispstr.num2strs(x);
+      elseif islogical(x)
+        out = repmat("false", size(x));
+        out(x) = "true";
+      elseif isdatetime(x)
+        out = dispstrlib.internal.Dispstr.looooooongDatestrs(x);
+      elseif iscell(x)
+        cellContentsReprs = string(size(x));
+        for i = 1:numel(x)
+          cellContentsReprs(i) = reprstr(x{i});
+        end
+        out = compose("{ %s }", cellContentsReprs);
+      elseif isstruct(x)
+        out = strings(size(x));
+        for i = 1:numel(x)
+          out(i) = mat2str2(x(i));
+        end
+      else
+        % If we got here, then it's not an object that overrides reprstrs
+        % itself, so do something generic.
+        out = repmat(string(missing), size(x));
+        strs = dispstrs(x);
+        for i = 1:numel(x)
+          out(i) = sprintf("<%s: %s>", class(x), strs(i));
+        end
       end
     end
     
@@ -255,14 +287,11 @@ classdef Dispstr
     end
     
     function dispStruct(x)
-      
       s = x;
-      
       if ~isscalar(s)
         disp(s);
         return
       end
-      
       flds = fieldnames(s);
       for i = 1:numel(flds)
         val = s.(flds{i});
@@ -274,16 +303,39 @@ classdef Dispstr
           end
         end
       end
-      
       builtin('disp', s);
-      
     end
     
     function out = dispc(x) %#ok<INUSD>
       %DISPC Display, with capture
-      
       out = evalc('disp(x)');
       out(end) = []; % chomp
+    end
+    
+    function out = looooooongDatestrs(dt, doTimeZone)
+      arguments
+        dt
+        doTimeZone (1,1) logical = true
+      end
+      dt = dispstrlib.internal.util.todatetime(dt);
+      tz = dt.TimeZone;
+      out = repmat(string(missing), size(dt));
+      dvec = datevec(dt);
+      % TODO: Vectorize this loop
+      for i = 1:numel(dt)
+        secs = floor(dvec(i,6));
+        nanos = round(rem(dvec(i,6), 1) * 1000000000);
+        if nanos == 1000000000
+          secs = secs + 1;
+          nanos = 0;
+        end
+        dstr = sprintf("%4d-%02d-%02d %02d:%02d:%02d.%09d", dvec(i,1), dvec(i,2), ...
+          dvec(i,3), dvec(i,4), dvec(i,5), secs, nanos);
+        if doTimeZone && ~isempty(tz)
+          dstr = dstr + " " + tz;
+        end
+        out(i) = dstr;
+      end
     end
     
     function out = isErrorIdentifier(str)
@@ -331,6 +383,15 @@ classdef Dispstr
     function out = num2cellstr(x)
       %NUM2CELLSTR Like num2str, but return cellstr of individual number strings
       out = strtrim(cellstr(num2str(x(:))));
+    end
+    
+    function out = num2strs(x, format)
+      if nargin == 1
+        c = num2str(x(:));
+      else
+        c = num2str(x(:), format);
+      end
+      out = reshape(strtrim(string(c)), size(x));
     end
     
     function out = prettyprintArray(strs)
