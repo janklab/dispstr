@@ -144,13 +144,29 @@ There's not a whole lot of code in this library. I think the major value in it i
 
 ## Functions
 
+There are three main levels or styles of representation in the Dispstr API:
+
+* `dispstr`/`dispstrs` – Human-readable, user-oriented display of the _meaning_ or _appearance_ of values in an array.
+* `reprstr`/`reprstrs` – Human-readable, developer-oriented display of the _format_ or internal representation of values in an array.
+* `mat2str`/`mat2str2` – Matlab-readable representation containing M-code that reconstructs the original array (or something close to it) when passed to `eval()`.
+
 ### `dispstr` and `dispstrs`
 
 `dispstr` and `dispstrs` are polymorphic functions that can display a concise, human-readable summary of any input data. Their implementation in the API is as global functions that have support for Matlab's built-in data types, and generic display formats for user-defined objects. User-defined classes can define `dispstr` and `dispstrs` methods to override them and provide customized displays.
 
 `dispstr` produces a single string that describes an entire array.
 
-`dispstr` produces a string for each element in an array, that describes that particular element's value or contents.
+`dispstrs` produces a string for each element in an array, that describes that particular element's value or contents.
+
+These values are suitable for use in user interfaces, presentation to end users, casual display at the command prompt, and the like.
+
+### `reprstr` and `reprstrs`
+
+`reprstr` and `reprstrs` are like `dispstr` and `dispstrs`, but display a lower-level, more developer-oriented representation of values. These are suitable for use in debugging contexts, like object dumps, log files, debugging and code inspection tools, and so on.
+
+### `mat2str2`
+
+`mat2str2` is an extension of Matlab's `mat2str` that works on additional types and sizes of arrays. It adds support for n-dimensional arrays, `cell` arrays, and `struct` arrays, and respects classes that provide `mat2str` overrides.
 
 ### `sprintfd`, `fprintfd`, `errord`, and `warningd`
 
