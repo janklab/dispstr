@@ -44,14 +44,14 @@ classdef DisplayableHandle < handle
         strs = dispstrs(this);
         out = strs{1};
       else
-        out = sprintf('%s %s', dispstrlib.internal.Dispstr.size2str(size(this)), class(this));
+        out = sprintf("%s %s", dispstrlib.internal.Dispstr.size2str(size(this)), class(this));
       end
     end
     
     function out = dispstrs(this)
-      out = cell(size(this));
+      out = repmat(string(missing), size(this));
       for i = 1:numel(this)
-        out{i} = dispstr_scalar(this(i));
+        out(i) = dispstr_scalar(this(i));
       end
     end
     
@@ -79,12 +79,50 @@ classdef DisplayableHandle < handle
   end
   
   methods (Access = protected)
+      
     function out = dispstr_scalar(this) %#ok<STOUT>
       error('jl:Unimplemented', ['Subclasses of DisplayableHandle must override ' ...
         'dispstr_scalar; %s does not'], ...
         class(this));
     end
+    
+    function out = reprstr_scalar(this)
+        out = sprintf("<%s: %s>", class(this), this.reprstr_contents_scalar);
+    end
+    
+    function out = reprstr_contents_scalar(this)
+        out = this.dispstr_scalar;
+    end
+    
+    function dispMaybeMatrix(this)
+      if ~ismatrix(this)
+        disp(dispstr(this));
+        return
+      elseif isempty(this)
+        if isequal(size(this), [0 0])
+          fprintf('[] (%s)\n', class(this));
+        else
+          fprintf('Empty %s %s array\n', dispstrlib.internal.Dispstr.size2str(size(this)), ...
+            class(this));
+        end
+      else
+        strs = dispstrs(this);
+        nCols = size(strs, 2);
+        colWidths = NaN(1, nCols);
+        for i = 1:nCols
+          colWidths(i) = max(strlen(strs(:,i)));
+        end
+        fmt = [strjoin(repmat({'%*s'}, [1 nCols]), '  ') '\n'];
+        for iRow = 1:size(strs, 1)
+          args = [num2cell(colWidths); strs(iRow,:)];
+          args = args(:);
+          fprintf(fmt, args{:});
+        end
+      end
+    end
+    
   end
+  
 end
 
 function out = convertDisplayablesToString(c)

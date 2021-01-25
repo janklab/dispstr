@@ -48,6 +48,188 @@ classdef Dispstr
       dispstrlib.internal.Dispstr.disp(x);
     end
     
+    function out = dispstr(x, options)
+      if nargin < 2;  options = [];  end
+      options = parseOpts(options, {'QuoteStrings',false});
+      
+      if ~ismatrix(x)
+        out = sprintf('%s %s', size2str(size(x)), class(x));
+      elseif isempty(x)
+        if ischar(x) && isequal(size(x), [0 0])
+          out = '''''';
+        elseif isnumeric(x) && isequal(size(x), [0 0])
+          out = '[]';
+        else
+          out = sprintf('Empty %s %s', size2str(size(x)), class(x));
+        end
+      elseif isnumeric(x)
+        if isscalar(x)
+          out = num2str(x);
+        else
+          strs = strtrim(cellstr(num2str(x(:))));
+          strs = reshape(strs, size(x));
+          out = formatArrayOfStringsAsMat2strExpr(strs);
+        end
+      elseif ischar(x)
+        if isrow(x)
+          if options.QuoteStrings
+            out = ['''' x ''''];
+          else
+            out = x;
+          end
+        else
+          strs = strcat({''''}, num2cell(x,2), {''''});
+          out = formatArrayOfStringsAsMat2strExpr(strs);
+        end
+      elseif iscell(x)
+        if iscellstr(x)
+          strs = strcat('''', x, '''');
+        else
+          strs = cellfun(@dispstr, x, 'UniformOutput',false);
+        end
+        out = formatArrayOfStringsAsMat2strExpr(strs, {'{','}'});
+      elseif isstring(x)
+        if options.QuoteStrings
+          strs = strcat('"', cellstr(x), '"');
+        else
+          strs = cellstr(x);
+        end
+        out = formatArrayOfStringsAsMat2strExpr(strs, {'[',']'});
+      elseif isa(x, 'datetime') && isscalar(x)
+        if isnat(x)
+          out = 'NaT';
+        else
+          out = char(x);
+        end
+      elseif isscalar(x) && (isa(x, 'duration') || isa(x, 'calendarDuration'))
+        out = char(x);
+      elseif isscalar(x) && iscategorical(x)
+        out = char(x);
+      else
+        out = sprintf('%s %s', size2str(size(x)), class(x));
+      end
+      
+      out = string(out);
+      
+    end
+    
+    function out = dispstrs(x)
+      if isempty(x)
+        out = reshape({}, size(x));
+      elseif isnumeric(x)
+        out = dispstrsNumeric(x);
+      elseif islogical(x)
+        out = dispstrsLogical(x);
+      elseif iscellstr(x)
+        out = x;
+      elseif isstring(x)
+        out = cellstr(x);
+      elseif iscell(x)
+        out = dispstrsGenericDisp(x);
+      elseif ischar(x)
+        % An unfortunate consequence of the typical use of char and dispstrs' contract
+        out = num2cell(x);
+      elseif isa(x, 'tabular')
+        out = dispstrsTabular(x);
+      elseif isa(x, 'datetime')
+        out = dispstrsDatetime(x);
+      elseif isa(x, 'struct')
+        out = repmat({'1-by-1 struct'}, size(x));
+      else
+        out = dispstrsGenericDisp(x);
+      end
+      
+      out = string(out);
+      
+    end
+    
+    function out = reprstr(x)
+      out = sprintf("<%s: %s: %s>", class(x), size2str(size(x)), dispstr(x));
+    end
+    
+    function out = reprstrs(x)
+      if ischar(x)
+        xx = string(x);
+      else
+        xx = x;
+      end
+      out = repmat(string(missing), size(xx));
+      strs = dispstrs(xx);
+      for i = 1:numel(xx)
+        out(i) = sprintf("<%s: %s>", class(xx), strs(i));
+      end
+    end
+    
+    function out = mat2str2(x)
+      % TODO: Add support for more types and sizes
+      if isnumeric(x) || isstring(x) || islogical(x)
+        out = dispstrlib.internal.Dispstr.mat2strExtendedSizes(x);
+      elseif iscell(x)
+        out = dispstrlib.internal.Dispstr.mat2strCell(x);
+      elseif isstruct(x)
+        out = dispstrlib.internal.Dispstr.mat2strStruct(x);
+      else
+        % Rely on object overrides or whatever functionality Matlab provides
+        out = mat2str(x);
+      end
+    end
+    
+    function out = mat2strExtendedSizes(x, ndimStyle)
+      % Uses basic mat2str() but adds support for n-d arrays
+      arguments
+        x
+        ndimStyle (1,1) string {mustBeMember(ndimStyle, ["cat", "reshape"])} = "reshape"
+      end
+      if ismatrix(x)
+        out = mat2str(x);
+      else
+        if ndimStyle == "cat"
+          nd = ndims(x);
+          len = size(x, nd);
+          pageExprs = repmat(string(missing), [1 len]);
+          colons = repmat({':'}, [1 len-1]);
+          for i = 1:len
+            ix = [colons {i}];
+            page = x(ix{:});
+            pageExprs(i) = dispstrlib.internal.Dispstr.mat2strExtendedSizes(page);
+          end
+          out = sprintf("cat(%d, %s)", strjoin(pageExprs, ", "));
+        else
+          vectorExpr = mat2str(x(:)');
+          out = sprintf("reshape(%s, %s)", vectorExpr, mat2str(size(x)));
+        end
+      end
+    end
+    
+    function out = mat2strCell(x)
+      cellExprs = repmat(string(missing), size(x));
+      for i = 1:numel(x)
+        cellExprs(i) = mat2str2(x{i});
+      end
+      out = formatArrayOfStringsAsMat2strExpr(cellExprs, ["{" "}"]);
+    end
+    
+    function out = mat2strStruct(x)
+      elExprs = repmat(string(missing), size(x));
+      fields = string(fieldnames(x));
+      for iEl = 1:numel(x)
+        s = x(iEl);
+        argExprs = repmat(string(missing), [2 numel(fields)]);
+        argExprs(1,:) = strcat("'", fields, "'");
+        for iField = 1:numel(fields)
+          fieldExpr = mat2str2(s.(fields{iField}));
+          if iscell(s.(fields{iField}))
+            % Gotta protect cell arguments from expansion by struct()
+            fieldExpr = sprintf("{%s}", fieldExpr);
+          end
+          argExprs(2,iField) = fieldExpr;
+        end
+        sExpr = sprintf("struct(%s)", strjoin(argExprs(:), ", "));
+        elExprs(iEl) = sExpr;
+      end
+      out = formatArrayOfStringsAsMat2strExpr(elExprs);
+    end
+    
     function dispCell(c)
       
       if ~iscell(c)
@@ -155,8 +337,14 @@ classdef Dispstr
       %
       % out = prettyprintArray(strs)
       %
+      % Converts an n-dimensional array of display strings to a multi-line
+      % formatted display of same. This is the sort of thing you see when
+      % you disp() an array.
+      %
       % strs (string) is an array of display strings of any size.
-      
+      arguments
+        strs string
+      end
       if ismatrix(strs)
         out = dispstrlib.internal.Dispstr.prettyprintMatrix(strs);
       else
@@ -263,7 +451,7 @@ classdef Dispstr
       varNames = t.Properties.VariableNames;
       nVars = numel(varNames);
       if nVars == 0
-        out = sprintf('%s table with zero variables', dispstrlib.internal.Dispstr.size2str(size(t)));
+        out = sprintf('%s table with zero variables', size2str(size(t)));
         return;
       end
       varVals = cell(1, nVars);
@@ -272,7 +460,7 @@ classdef Dispstr
         varVals{i} = t{:,i};
       end
       
-      out = dispstrlib.internal.Dispstr.prettyprintTabular_generic(varNames, varVals, true);      
+      out = dispstrlib.internal.Dispstr.prettyprintTabular_generic(varNames, varVals, true);
       if nargout == 0
         fprintf('%s\n', out);
       end
@@ -336,26 +524,6 @@ classdef Dispstr
       
     end
     
-    function out = size2str(sz)
-      %SIZE2STR Format an array size for display
-      %
-      % out = size2str(sz)
-      %
-      % Sz is an array of dimension sizes, in the format returned by SIZE.
-      %
-      % Examples:
-      %
-      % size2str(magic(3))
-      
-      strs = cell(size(sz));
-      for i = 1:numel(sz)
-        strs{i} = sprintf('%d', sz(i));
-      end
-      
-      out = strjoin(strs, '-by-');
-      
-    end
-    
     function out = sprintfv(format, varargin)
       %SPRINTFV "Vectorized" sprintf
       %
@@ -412,6 +580,38 @@ classdef Dispstr
   
 end
 
+function out = formatArrayOfStringsAsMat2strExpr(strs, brackets, ndimStyle)
+arguments
+  strs string
+  brackets (1,2) string = ["[" "]"]
+  ndimStyle (1,1) string {mustBeMember(ndimStyle, ["cat", "reshape"])} = "cat"
+end
+if isscalar(strs)
+  out = strs;
+elseif ismatrix(strs)
+  rowStrs = repmat(string(missing), [size(strs,1), 1]);
+  for iRow = 1:size(strs,1)
+    rowStrs(iRow) = strjoin(strs(iRow,:), ' ');
+  end
+  out = brackets(1) + strjoin(rowStrs, '; ') + brackets(2);
+else
+  if ndimStyle == "cat"
+    nd = ndims(strs);
+    len = size(strs, nd);
+    subExprs = repmat(string(missing), [1 len]);
+    colons = repmat({':'}, [1 nd-1]);
+    for i = 1:len
+      ix = [colons {i}];
+      subStrs = strs(ix{:});
+      subExprs(i) = formatArrayOfStringsAsMat2strExpr(subStrs, brackets, ndimStyle);
+    end
+    out = sprintf("cat(%d, %s)", nd, strjoin(subExprs, ", "));
+  else
+    vectorExpr = formatArrayOfStringsAsMat2strExpr(strs(:)', brackets);
+    out = sprintf("reshape(%s, %s)", vectorExpr, mat2str(size(strs)));
+  end
+end
+end
 
 function out = rowData2sprintfArgs(widths, strs)
 x = [num2cell(widths(:)) cellstr(strs(:))];
@@ -425,4 +625,69 @@ if isempty(supportingClasses)
   supportingClasses = ["datetime" "duration" "calendarduration"];
 end
 out = ismember(class(obj), supportingClasses);
+end
+
+
+function out = dispstrsDatetime(x)
+out = cell(size(x));
+tfFinite = isfinite(x);
+out(tfFinite) = cellstr(datestr(x(tfFinite)));
+out(isnat(x)) = {'NaT'};
+dnum = datenum(x);
+out(isinf(dnum) & dnum > 0) = {'Inf'};
+out(isinf(dnum) & dnum < 0) = {'-Inf'};
+end
+
+function out = dispstrsNumeric(x)
+out = reshape(strtrim(cellstr(num2str(x(:)))), size(x));
+end
+
+function out = dispstrsLogical(x)
+out = repmat("false", size(x));
+out(x) = "true";
+end
+
+function out = dispstrsTabular(x)
+out = cell(size(x));
+for iRow = 1:size(x, 1)
+  for iCol = 1:size(x, 2)
+    val = x{iRow,iCol};
+    if iscell(val)
+      val = val{1};
+    end
+    out{iRow,iCol} = dispstr(val);
+  end
+end
+end
+
+function out = dispstrsGenericDisp(x)
+out = cell(size(x));
+for i = 1:numel(x)
+  if iscell(x)
+    xi = x{i}; %#ok<NASGU>
+  else
+    xi = x(i); %#ok<NASGU>
+  end
+  str = evalc('disp(xi)');
+  str(end) = []; % chomp newline
+  out{i} = str;
+end
+end
+
+
+function out = size2str(sz)
+%SIZE2STR Format an array size for display
+%
+% out = size2str(sz)
+%
+% Sz is an array of dimension sizes, in the format returned by SIZE.
+%
+% Examples:
+%
+% size2str(magic(3))
+strs = cell(size(sz));
+for i = 1:numel(sz)
+  strs{i} = sprintf('%d', sz(i));
+end
+out = strjoin(strs, '-by-');
 end

@@ -51,7 +51,7 @@ classdef Displayable
       else
         % Default to doing an opaque display, because we don't know if the
         % object is going to spam whatever context it's in.
-        out = sprintf('<%s %s>', size2str(size(this)), class(this));
+        out = sprintf("<%s %s>", size2str(size(this)), class(this));
       end
     end
     
@@ -65,6 +65,17 @@ classdef Displayable
       for i = 1:numel(this)
         out(i) = dispstr_scalar(subsref(this, ...
           struct('type','()', 'subs',{{i}})));
+      end
+    end
+    
+    function out = reprstr(this)
+      out = sprintf("<%s: %s>", dispstr(this));
+    end
+    
+    function out = reprstrs(this)
+      out = repmat(string(missing), size(this));
+      for i = 1:numel(this)
+        out(i) = this.reprstr_scalar;
       end
     end
     
@@ -108,6 +119,14 @@ classdef Displayable
       error('jl:Unimplemented', ['Subclasses of Displayable must override ' ...
         'dispstr_scalar; %s does not'], ...
         class(this));
+    end
+    
+    function out = reprstr_scalar(this)
+        out = sprintf("<%s: %s>", class(this), this.reprstr_contents_scalar);
+    end
+    
+    function out = reprstr_contents_scalar(this)
+        out = this.dispstr_scalar;
     end
     
     function dispMaybeMatrix(this)
