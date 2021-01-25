@@ -394,6 +394,53 @@ classdef Dispstr
       out = reshape(strtrim(string(c)), size(x));
     end
     
+    function out = float2mantexpstrs(x)
+      % TODO: Use bit masking to get the sign, mantissa, and exponent out
+      out = strings(size(x));
+      for i = 1:numel(x)
+        if isnan(x(i))
+          out(i) = "NaN";
+        elseif isinf(x(i)) && x(i) > 0
+          out(i) = "Inf";
+        elseif isinf(x(i)) && x(i) < 0
+          out(i) = "-Inf";
+        else
+          if isa(x, 'double')
+            % Account for endianness. All computers that Matlab runs on these
+            % days are little-endian, so we don't have to bother testing for
+            % host endianness; just always swap.
+            %bits = swapbytes(typecast(x(i), 'uint64'));
+            % Actually, no, don't do that; in my experimentation, it looks
+            % wrong.
+            bits = typecast(x(i), 'uint64');
+            bstr = dec2bin(bits);
+            bstr = [repmat('0', [1 64-numel(bstr)]) bstr];
+            fprintf('bits: %s\n', bstr);
+            % TODO: This logic is totally broken. Need to take into account the
+            % biasing and normalization of these values, and bitshift them
+            sign = bitand(bits, 0x8000000000000000);
+            exponent = bitand(bits, 0x7ff0000000000000);
+            exponent = bitshift(exponent, -52) - 1023;
+            fprintf('exponent: %s\n', dec2bin(exponent));
+            mantissa = bitand(bits, 0x000fffffffffffff);
+            % Okay, now how do we turn the mantissa into the fractional value it
+            % represents?
+            %mantissa = bitor(mantissa, 0x0010000000000000); % Turn on the implicit 1
+            fprintf('mantissa: %s\n', dec2bin(mantissa));
+            str = sprintf("%d x 2^%d", mantissa, exponent);
+            if sign ~= 0
+              str = "-" + str;
+            end
+            out(i) = str;
+          elseif isa(x, 'single')
+            error('unimplemented for singles');
+          else
+            error('Unsupported type: %s', class(x));
+          end
+        end
+      end
+    end
+    
     function out = num2strsPrecise(x)
       assert(isnumeric(x), 'x must be numeric');
       if isinteger(x)
