@@ -188,7 +188,7 @@ Classes can implement their own `prettyprint` methods to customize their own dis
 
 ## Usage
 
-Get the Dispstr library on your path, and then define `dispstr()` and `dispstrs()` methods on your classes. Have their `disp()` methods use `dispstr()`. Or, for convenience, have them inherit from `dispstrlib.Displayable` and just define `dispstrs()` on them.
+Get the Dispstr library on your path, and then define `dispstr()` and `dispstrs()` methods on your classes. Have their `disp()` methods use `dispstr()`. Or, for convenience, have them inherit from `dispstrlib.Displayable` and just define `dispstr_scalar()` on them.
 
 Use `dispd` to display tables. Use `fprintfd` and `sprintfd` instead of `fprintf` and `sprintf` for string output.
 
