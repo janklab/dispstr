@@ -394,6 +394,23 @@ classdef Dispstr
       out = reshape(strtrim(string(c)), size(x));
     end
     
+    function out = num2strsPrecise(x)
+      assert(isnumeric(x), 'x must be numeric');
+      if isinteger(x)
+        out = dispstrlib.internal.Dispstr.num2strs(x);
+      else
+        e = eps(x);
+        nDigits = ceil(abs(log10(e))) + 1;
+        out = strings(size(x));
+        for i = 1:numel(x)
+          fmt = sprintf("%%.%df", nDigits(i));
+          out(i) = sprintf(fmt, x(i));
+        end
+        out = regexprep(out, '0*$', '');
+        out = regexprep(out, '\.$', '');
+      end
+    end
+    
     function out = prettyprintArray(strs)
       %PRETTYPRINT_ARRAY Pretty-print an array from dispstrs
       %
