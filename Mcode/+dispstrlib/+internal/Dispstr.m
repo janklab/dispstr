@@ -424,9 +424,13 @@ classdef Dispstr
             fprintf('exponent: %s\n', dec2bin(exponent));
             mantissa = bitand(bits, 0x000fffffffffffff);
             % Okay, now how do we turn the mantissa into the fractional value it
-            % represents?
+            % represents? Hmm. Maybe this fundamentally doesn't work.
             %mantissa = bitor(mantissa, 0x0010000000000000); % Turn on the implicit 1
+            fraction = 1 + (double(mantissa) / double(0x0010000000000000));
+            % Ugh; now we've got double roundoff again; can we express that
+            % binary fraction precisely?
             fprintf('mantissa: %s\n', dec2bin(mantissa));
+            fprintf('fraction: %f\n', fraction);
             str = sprintf("%d x 2^%d", mantissa, exponent);
             if sign ~= 0
               str = "-" + str;
