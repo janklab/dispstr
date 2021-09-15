@@ -4,6 +4,12 @@
 
 The [Dispstr API](https://github.com/janklab/dispstr) is a Matlab API for extensible, polymorphic custom object display. This means it's an API you can code against to support generic display of user-defined objects and their data. It also supports using those custom displays when the objects are contained inside a complex type such as a `struct` or `table`.
 
+Dispstr defines `dispstr`, `reprstr`, and related functions that you can use to customize the string display of your classes, and are also useful for converting arrays to strings in scenarios not directly supported by Matlab's main string API.
+
+The main difference between the Dispstr API and Matlab's existing `disp` and the [Object Display Customization API](https://www.mathworks.com/help/matlab/custom-object-display.html) is that they are about formatting object displays for multiline display at the console, and Dispstr is about formatting objects to strings for inclusion or interpolation in to other display contexts. Dispstr adds per-element string conversion. And Dispstr provides the additional "repr" style of representation-oriented formatting.
+
+(Now that Matlab has a `string(...)` conversion supported by some objects, that's close to what `dispstrs` does, but it's not used in all contexts. And philosophically, I don't know if `string(x)`, which is a type conversion operation, really matches the intent of `dispstrs`, which is explicitly a _display formatting_ operation.)
+
 ## Motivation
 
 Let's say you've got a class with a custom `disp` method.
@@ -150,6 +156,23 @@ There are three main levels or styles of representation in the Dispstr API:
 * `reprstr`/`reprstrs` – Human-readable, developer-oriented display of the _format_ or internal representation of values in an array.
 * `mat2str`/`mat2str2` – Matlab-readable representation containing M-code that reconstructs the original array (or something close to it) when passed to `eval()`.
 
+These functions are all intended to be overridden by methods on classes which wish to customize their display.
+
+This set of functions varies along two aspects or axes:
+
+* Whether to do user-friendly "value" displays, debugging/developer-oriented internal "representation" displays, or Matlab M-code that will reconstruct the value.
+* Whether to create one string for each element of the input, or a single string representing the entire array.
+
+You can view these as a matrix:
+
+|                                    | One string for whole array | One string per element |
+| ---------------------------------- | -------------------------- | ---------------------- |
+| User-friendly "value" display      | `dispstr`                  | `dispstrs`             |
+| Debugging "representation" display | `reprstr`                  | `reprstrs`             |
+| Reconstruction M-code              | `mat2str`/`mat2str2`       | N/A                    |
+
+Matlab's `string(x)` conversion can be viewed as basically the same thing as `dispstrs(x)`. Most classes using the Dispstr API should define a `string(this)` conversion method that just calls `dispstrs(x)`.
+
 ### `dispstr` and `dispstrs`
 
 `dispstr` and `dispstrs` are polymorphic functions that can display a concise, human-readable summary of any input data. Their implementation in the API is as global functions that have support for Matlab's built-in data types, and generic display formats for user-defined objects. User-defined classes can define `dispstr` and `dispstrs` methods to override them and provide customized displays.
@@ -195,6 +218,24 @@ Use `dispd` to display tables. Use `fprintfd` and `sprintfd` instead of `fprintf
 If you're brave, and your code is an application instead of a library, or you're using Matlab interactively, add `Mcode-monkeypatch` to your path too, to override Matlab's own `disp`, `fprintf`, and `sprintf` to support dispstr. (It's a risky move, but having that work is really nice, so consider doing it. And go ahead and turn off `warning off MATLAB:dispatcher:nameConflict`.)
 
 See the documentation [on the web](http://dispstr.janklab.net) or in `docs/` in the distribution for details.
+
+## How I'd like Matlab to support this
+
+I'd like it if Dispstr or a similar API were built in to Matlab itself. That support should look like this:
+
+* `dispstr`, `dispstrs`, `reprstr`, and `reprstrs` are all functions in base Matlab.
+* The `*printf` family of functions implicitly calls `dispstrs` on objects that are passed to `%s` conversions.
+* The display for `struct` arrays implicitly calls `dispstr` on field contents.
+* The display for `cell` arrays implicitly calls `dispstr` on cell contents.
+* The display for `tabular` arrays implicitly calls `dispstrs` on variable contents.
+* The display for `containers.Map` and any similar dictionary type implicitly calls `dispstr` on value contents.
+* The Workspace display in the Matlab desktop implicitly calls `dispstr` on variables.
+* Plots implicitly call `dispstrs` on values that are used as `*ticks` values.
+* The default tooltip popup for plots implicitly calls `dispstr` on the values it's displaying there.
+* TODO: Should `writecell`, `writematrix`, `writestruct`, and similar high-level file IO functions do something?
+* Maybe `jsonencode` should have an option to call one of these methods when converting user-defined objects? Probably not; JSON encoding isn't really about string formatting.
+
+It would be nice if Variable Editor in the Matlab desktop also defined hooks for customizing variable display and parsing/interpretation of new values that are typed in by the user. `dispstrs` would probably be fine for the display part. I don't know if the hook for parsing user-inputted values should be a static method on the class, or if it should be something that classes/code should register with the Matlab Desktop directly. (If it's the latter, how would it do that? Matlab classes don't have a facility for running initialization code at class load time.)
 
 ## License
 
