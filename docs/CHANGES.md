@@ -1,6 +1,11 @@
 Changelog for Dispstr
 ======================
 
+Version 1.2.0+ (in progress)
+--------------------------
+
+Nothing yet!
+
 Version 1.2.0 (2021-09-14)
 --------------------------
 
