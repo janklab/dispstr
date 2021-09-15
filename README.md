@@ -224,14 +224,18 @@ See the documentation [on the web](http://dispstr.janklab.net) or in `docs/` in 
 I'd like it if Dispstr or a similar API were built in to Matlab itself. That support should look like this:
 
 * `dispstr`, `dispstrs`, `reprstr`, and `reprstrs` are all functions in base Matlab.
-* The `*printf` family of functions implicitly calls `dispstrs` on objects that are passed to `%s` conversions.
 * The display for `struct` arrays implicitly calls `dispstr` on field contents.
 * The display for `cell` arrays implicitly calls `dispstr` on cell contents.
 * The display for `tabular` arrays implicitly calls `dispstrs` on variable contents.
 * The display for `containers.Map` and any similar dictionary type implicitly calls `dispstr` on value contents.
+* Should have a way for all the above compound type displays to display the "repr" version instead of the "disp" version. Maybe `details()` should do that? Or maybe there should be an option to `disp`? Having `details` do that is sounding good to me.
+* The `*printf` family of functions implicitly calls `dispstrs` on objects that are passed to `%s` conversions.
 * The Workspace display in the Matlab desktop implicitly calls `dispstr` on variables.
 * Plots implicitly call `dispstrs` on values that are used as `*ticks` values.
 * The default tooltip popup for plots implicitly calls `dispstr` on the values it's displaying there.
+
+And:
+
 * TODO: Should `writecell`, `writematrix`, `writestruct`, and similar high-level file IO functions do something?
 * Maybe `jsonencode` should have an option to call one of these methods when converting user-defined objects? Probably not; JSON encoding isn't really about string formatting.
 
